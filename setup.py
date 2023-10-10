@@ -40,5 +40,10 @@ setup(
         "Intended Audience :: Developers",
         "Operating System :: POSIX :: Linux" "Environment :: Console" "Natural Language :: English",
     ],
-    scripts=["bin/auto-cpufreq", "bin/auto-cpufreq-gtk"],
+    entry_points={
+        'console_scripts': [
+            'auto-cpufreq = auto_cpufreq.cli:cli',
+        ],
+    },
+    # scripts=["bin/auto-cpufreq", "bin/auto-cpufreq-gtk"],
 )

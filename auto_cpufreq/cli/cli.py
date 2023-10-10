@@ -10,9 +10,23 @@ import time
 from click import UsageError
 from subprocess import call, run
 
-sys.path.append("../")
 from auto_cpufreq.core import *
 from auto_cpufreq.power_helper import *
+import auto_cpufreq.cli.cli
+
+import auto_cpufreq.components.daemon
+import auto_cpufreq.components.debug
+import auto_cpufreq.components.donate
+import auto_cpufreq.components.force
+import auto_cpufreq.components.get_state
+import auto_cpufreq.components.install
+import auto_cpufreq.components.live
+import auto_cpufreq.components.log
+import auto_cpufreq.components.monitor
+import auto_cpufreq.components.remove
+import auto_cpufreq.components.stats
+import auto_cpufreq.components.update
+import auto_cpufreq.components.version
 
 # cli
 @click.command()
@@ -61,92 +75,13 @@ def main(config, daemon, debug, update, install, remove, live, log, monitor, sta
         footer()
     else:
         if daemon:
-            config_info_dialog()
-            root_check()
-            file_stats()
-            if os.getenv("PKG_MARKER") == "SNAP" and dcheck == "enabled":
-                gnome_power_detect_snap()
-                tlp_service_detect_snap()
-                while True:
-                    footer()
-                    gov_check()
-                    cpufreqctl()
-                    distro_info()
-                    sysinfo()
-                    set_autofreq()
-                    countdown(2)
-            elif os.getenv("PKG_MARKER") != "SNAP":
-                gnome_power_detect()
-                tlp_service_detect()
-                while True:
-                    footer()
-                    gov_check()
-                    cpufreqctl()
-                    distro_info()
-                    sysinfo()
-                    set_autofreq()
-                    countdown(2)
-            else:
-                pass
-            #"daemon_not_found" is not defined
-                #daemon_not_found()
+            auto_cpufreq.components.daemon.daemon()
         elif monitor:
-            config_info_dialog()
-            root_check()
-            print('\nNote: You can quit monitor mode by pressing "ctrl+c"')
-            if os.getenv("PKG_MARKER") == "SNAP":
-                gnome_power_detect_snap()
-                tlp_service_detect_snap()
-            else:
-                gnome_power_detect()
-                tlp_service_detect()
-            while True:
-                time.sleep(1)
-                running_daemon_check()
-                footer()
-                gov_check()
-                cpufreqctl()
-                distro_info()
-                sysinfo()
-                mon_autofreq()
-                countdown(2)
+            auto_cpufreq.components.monitor.monitor()
         elif live:
-            root_check()
-            config_info_dialog()
-            print('\nNote: You can quit live mode by pressing "ctrl+c"')
-            time.sleep(1)
-            if os.getenv("PKG_MARKER") == "SNAP":
-                gnome_power_detect_snap()
-                tlp_service_detect_snap()
-            else:
-                gnome_power_detect_install()
-                gnome_power_stop_live()
-                tlp_service_detect()
-            while True:
-                try:
-                    running_daemon_check()
-                    footer()
-                    gov_check()
-                    cpufreqctl()
-                    distro_info()
-                    sysinfo()
-                    set_autofreq()
-                    countdown(2)
-                except KeyboardInterrupt:
-                    gnome_power_start_live()
-                    print("")
-                    sys.exit()
+            auto_cpufreq.components.live.live()
         elif stats:
-            not_running_daemon_check()
-            config_info_dialog()
-            print('\nNote: You can quit stats mode by pressing "ctrl+c"')
-            if os.getenv("PKG_MARKER") == "SNAP":
-                gnome_power_detect_snap()
-                tlp_service_detect_snap()
-            else:
-                gnome_power_detect()
-                tlp_service_detect()
-            read_stats()
+            auto_cpufreq.components.stats.stats()
         elif log:
             deprecated_log_msg()
         elif get_state:
@@ -154,57 +89,13 @@ def main(config, daemon, debug, update, install, remove, live, log, monitor, sta
             override = get_override()
             print(override)
         elif debug:
-            # ToDo: add status of GNOME Power Profile service status
-            config_info_dialog()
-            root_check()
-            cpufreqctl()
-            footer()
-            distro_info()
-            sysinfo()
-            print("")
-            app_version()
-            print("")
-            python_info()
-            print("")
-            device_info()
-            if charging():
-                print("Battery is: charging")
-            else:
-                print("Battery is: discharging")
-            print("")
-            app_res_use()
-            display_load()
-            get_current_gov()
-            get_turbo()
-            footer()
+            auto_cpufreq.components.debug.debug()
         elif version:
-            footer()
-            distro_info()
-            app_version()
-            footer()
+            auto_cpufreq.components.version.version()
         elif donate:
-            footer()
-            print("If auto-cpufreq helped you out and you find it useful ...\n")
-            print("Show your appreciation by donating!")
-            print("https://github.com/AdnanHodzic/auto-cpufreq/#donate")
-            footer()
+            auto_cpufreq.components.donate.donate()
         elif install:
-            if os.getenv("PKG_MARKER") == "SNAP":
-                root_check()
-                running_daemon_check()
-                gnome_power_detect_snap()
-                tlp_service_detect_snap()
-                bluetooth_notif_snap()
-                gov_check()
-                run("snapctl set daemon=enabled", shell=True)
-                run("snapctl start --enable auto-cpufreq", shell=True)
-                deploy_complete_msg()
-            else:
-                root_check()
-                running_daemon_check()
-                gov_check()
-                deploy_daemon()
-                deploy_complete_msg()
+            auto_cpufreq.components.install.install()
         elif remove:
             if os.getenv("PKG_MARKER") == "SNAP":
                 root_check()
